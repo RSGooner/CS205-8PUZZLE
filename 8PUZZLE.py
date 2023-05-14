@@ -10,3 +10,15 @@ def manhattan_distance(state, goal):
 def number_of_misplaced_tiles(state, goal):
     """Return the number of misplaced tiles"""
     return sum(s != g for (s, g) in zip(state, goal))
+
+def find_neighbors(state):
+    """Return the states reachable from state"""
+    size = 3
+    i = state.index(0)  # The position of the blank
+    (x, y) = divmod(i, size)
+    for (dx, dy) in MOVES:
+        (nx, ny) = (x + dx, y + dy)
+        if 0 <= nx < size and 0 <= ny < size:
+            next_state = state.copy()
+            next_state[i], next_state[nx * size + ny] = next_state[nx * size + ny], next_state[i]
+            yield (1, next_state)
