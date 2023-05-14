@@ -29,35 +29,47 @@ def reconstruct_path(seen, state):
     """Return the path from the start state to state"""
     return [] if state is None else reconstruct_path(seen, seen[tuple(state)]) + [state]
 
-def solve_puzzle(start, heuristic=1):
-    size = 3
+def solve_puzzle(start, heuristic):
+    """Main function to solve the puzzle."""
     # Define the goal state
-    goal = list(range(1, size*size)) + [0]
+    goal = list(range(1, 9)) + [0]
     
     # Define the heuristic function
-    if heuristic == 3:  # Manhattan
-        h = manhattan_distance
-    elif heuristic == 2:  # Misplaced
+    if heuristic == 1:
+        h = lambda s: 0  # Uniform Cost Search
+    elif heuristic == 2:
         h = number_of_misplaced_tiles
-    else:  # UCS
-        h = lambda state, goal: 0
+    elif heuristic == 3:
+        h = manhattan_distance
 
     # Priority queue, where the priority (score) is the first element
-    queue = [(h(start, goal), start)]
+    queue = [(h(start), start)]
 
     # Dictionary of {state: predecessor}
     seen = {tuple(start): None}
 
+    max_queue_size = 1  # Keep track of max queue size
+
     while queue:
         (priority, state) = heappop(queue)
         if state == goal:
-            return reconstruct_path(seen, state)
+            path = reconstruct_path(seen, state)
+            solution_depth = len(path) - 1
+            num_nodes_expanded = len(seen)
+            solution_info = {
+                'solution_depth': solution_depth,
+                'num_nodes_expanded': num_nodes_expanded,
+                'max_queue_size': max_queue_size,
+            }
+            return path, solution_info
         for (cost, next_state) in find_neighbors(state):
             if tuple(next_state) not in seen:
-                priority = cost + h(next_state, goal)
+                priority = cost + h(next_state)
                 heappush(queue, (priority, next_state))
                 seen[tuple(next_state)] = state
+                max_queue_size = max(max_queue_size, len(queue))  # Update max queue size if necessary
     return []
+
 
 def input_puzzle():
     """Prompt the user to input the initial state of the puzzle and the heuristic to use"""
@@ -103,11 +115,15 @@ def print_state(state):
 
 def main(): 
     start, heuristic = input_puzzle()
-    path = solve_puzzle(start, heuristic)
+    path, solution_info = solve_puzzle(start, heuristic)
     if path:
         print("Puzzle has solved!")
         for state in path:
             print_state(state)
+
+        print(f"Solution depth: {solution_info['solution_depth']}")
+        print(f"Number of nodes expanded: {solution_info['num_nodes_expanded']}")
+        print(f"Max queue size: {solution_info['max_queue_size']}")
     else:
         print("Fail to solve.")
 
