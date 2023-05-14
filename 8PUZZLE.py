@@ -63,13 +63,32 @@ def input_puzzle():
     """Prompt the user to input the initial state of the puzzle and the heuristic to use"""
     puzzle_type = int(input("If you want to use default puzzle, please enter 1, if you want to set the puzzle by yourself, please input 2 :"))
     if puzzle_type == 1:
-        # Default puzzle
-        start = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+        difficulty_type = int(input("The preset puzzle has 8 different levels of difficulty, enter 1 to 8 to select one of the levels:"))
+        if difficulty_type == 1:
+            start = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+        elif difficulty_type == 2:
+            start = [1, 2, 3, 4, 5, 6, 0, 7, 8]
+        elif difficulty_type == 3:
+            start = [1, 2, 3, 5, 0, 6, 4, 7, 8]
+        elif difficulty_type == 4:
+            start = [1, 3, 6, 5, 0, 2, 4, 7, 8]
+        elif difficulty_type == 5:
+            start = [1, 3, 6, 5, 0, 7, 4, 8, 2]
+        elif difficulty_type == 6:
+            start = [1, 6, 7, 5, 0, 3, 4, 8, 2]
+        elif difficulty_type == 7:
+            start = [7, 1, 2, 4, 8, 5, 6, 3, 0]
+        elif difficulty_type == 8:
+            start = [0, 7, 2, 4, 6, 1, 3, 5, 8]
+        else:
+            print("Please enter 1 to 8 to select one of the levels.")
+            return input_puzzle()
     else:
         print("Please enter the initial state of the puzzle, 0 for empty space, and enter 9 numbers separated by spaces.")
         start = list(map(int, input().split()))
     heuristic = int(input("Please select the heuristic function (input 1 for UCS, 2 for misplaced, 3 for manhattan):"))
     return start, heuristic
+
 
 def print_state(state):
     """Print the state of the puzzle"""
@@ -78,6 +97,8 @@ def print_state(state):
         for j in range(size):
             print(state[i*size + j], end=" ")
         print()
+    print()  # This will print an empty line after each state
+
 
 
 def main(): 
