@@ -24,7 +24,7 @@ def find_neighbors(state):
             next_state = state.copy()
             next_state[i], next_state[nx * size + ny] = next_state[nx * size + ny], next_state[i]
             yield (1, next_state)
-            
+
 def reconstruct_path(seen, state):
     """Return the path from the start state to state"""
     return [] if state is None else reconstruct_path(seen, seen[tuple(state)]) + [state]
@@ -58,3 +58,36 @@ def solve_puzzle(start, heuristic=1):
                 heappush(queue, (priority, next_state))
                 seen[tuple(next_state)] = state
     return []
+
+def input_puzzle():
+    """Prompt the user to input the initial state of the puzzle and the heuristic to use"""
+    puzzle_type = int(input("If you want to use default puzzle, please enter 1, if you want to set the puzzle by yourself, please input 2 :"))
+    if puzzle_type == 1:
+        # Default puzzle
+        start = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+    else:
+        print("Please enter the initial state of the puzzle, 0 for empty space, and enter 9 numbers separated by spaces.")
+        start = list(map(int, input().split()))
+    heuristic = int(input("Please select the heuristic function (input 1 for UCS, 2 for misplaced, 3 for manhattan):"))
+    return start, heuristic
+
+def print_state(state):
+    """Print the state of the puzzle"""
+    size = 3
+    for i in range(size):
+        for j in range(size):
+            print(state[i*size + j], end=" ")
+        print()
+
+
+def main(): 
+    start, heuristic = input_puzzle()
+    path = solve_puzzle(start, heuristic)
+    if path:
+        print("Puzzle has solved!")
+        for state in path:
+            print_state(state)
+    else:
+        print("Fail to solve.")
+
+main()
