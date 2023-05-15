@@ -1,4 +1,6 @@
 from heapq import heappop, heappush
+import matplotlib.pyplot as plt
+
 
 # Moves for a tile (Up, Down, Left, Right)
 MOVES = [(0, -1), (0, 1), (-1, 0), (1, 0)]
@@ -38,9 +40,9 @@ def solve_puzzle(start, heuristic):
     if heuristic == 1:
         h = lambda s: 0  # Uniform Cost Search
     elif heuristic == 2:
-        h = number_of_misplaced_tiles
+        h = lambda s: number_of_misplaced_tiles(s, goal)
     elif heuristic == 3:
-        h = manhattan_distance
+        h = lambda s: manhattan_distance(s, goal)
 
     # Priority queue, where the priority (score) is the first element
     queue = [(h(start), start)]
@@ -69,6 +71,7 @@ def solve_puzzle(start, heuristic):
                 seen[tuple(next_state)] = state
                 max_queue_size = max(max_queue_size, len(queue))  # Update max queue size if necessary
     return []
+
 
 
 def input_puzzle():
@@ -111,6 +114,26 @@ def print_state(state):
         print()
     print()  # This will print an empty line after each state
 
+def collect_results(start):
+    """Collect results for all heuristics and plot them."""
+    results = {}
+    metrics = ['solution_depth', 'num_nodes_expanded', 'max_queue_size']
+    for heuristic in [1, 2, 3]:  # Iterate over all heuristics
+        _, results[heuristic] = solve_puzzle(start, heuristic)
+
+    # Prepare data for plotting
+    data_to_plot = {metric: [] for metric in metrics}
+    for heuristic, result in results.items():
+        for metric in metrics:
+            data_to_plot[metric].append(result[metric])
+
+    # Plot the results
+    for metric, data in data_to_plot.items():
+        plt.figure()
+        plt.bar(['UCS', 'Misplaced Tiles', 'Manhattan Distance'], data)
+        plt.title('Comparison of Heuristics by {}'.format(metric))
+        plt.ylabel(metric)
+        plt.show()
 
 
 def main(): 
@@ -126,5 +149,8 @@ def main():
         print(f"Max queue size: {solution_info['max_queue_size']}")
     else:
         print("Fail to solve.")
+        
+    collect_results(start)
+
 
 main()
