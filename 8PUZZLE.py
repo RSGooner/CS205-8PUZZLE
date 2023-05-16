@@ -2,14 +2,20 @@ from heapq import heappop, heappush
 import matplotlib.pyplot as plt
 
 
-# Moves for a tile (Up, Down, Left, Right)
+# Four Directions Move
 MOVES = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
 def manhattan_distance(state, goal):
     """Return the sum of the Manhattan distances of the tiles from their goal positions"""
     size = 3
-    return sum(abs(i // size - g // size) + abs(i % size - g % size)
-               for (i, g) in ((state.index(n), goal.index(n)) for n in range(1, size*size)))
+    distances = []
+    for n in range(1, size*size):
+        i = state.index(n)
+        g = goal.index(n)
+        distance = abs(i // size - g // size) + abs(i % size - g % size)
+        distances.append(distance)
+    return sum(distances)
+
 
 def number_of_misplaced_tiles(state, goal):
     """Return the number of misplaced tiles"""
@@ -27,37 +33,39 @@ def find_neighbors(state):
             next_state[i], next_state[nx * size + ny] = next_state[nx * size + ny], next_state[i]
             yield (1, next_state)
 
-def reconstruct_path(seen, state):
+def reconstruct_path(pre_state, state):
     """Return the path from the start state to state"""
-    return [] if state is None else reconstruct_path(seen, seen[tuple(state)]) + [state]
+    return [] if state is None else reconstruct_path(pre_state, pre_state[tuple(state)]) + [state]
 
 def solve_puzzle(start, heuristic):
     """Main function to solve the puzzle."""
     # Define the goal state
     goal = list(range(1, 9)) + [0]
     
-    # Define the heuristic function
+    # Define the heuristic function. I use lambda to avoid TyperError
     if heuristic == 1:
-        h = lambda s: 0  # Uniform Cost Search
+        h = lambda s: 0  
     elif heuristic == 2:
         h = lambda s: number_of_misplaced_tiles(s, goal)
     elif heuristic == 3:
         h = lambda s: manhattan_distance(s, goal)
 
     # Priority queue, where the priority (score) is the first element
-    queue = [(h(start), start)]
+    priority_value = h(start)  # calculateh(n)
+    queue = [(priority_value, start)]  # edit the queue
+
 
     # Dictionary of {state: predecessor}
-    seen = {tuple(start): None}
+    pre_state = {tuple(start): None}
 
     max_queue_size = 1  # Keep track of max queue size
 
     while queue:
         (priority, state) = heappop(queue)
         if state == goal:
-            path = reconstruct_path(seen, state)
+            path = reconstruct_path(pre_state, state)
             solution_depth = len(path) - 1
-            num_nodes_expanded = len(seen)
+            num_nodes_expanded = len(pre_state)
             solution_info = {
                 'solution_depth': solution_depth,
                 'num_nodes_expanded': num_nodes_expanded,
@@ -65,10 +73,10 @@ def solve_puzzle(start, heuristic):
             }
             return path, solution_info
         for (cost, next_state) in find_neighbors(state):
-            if tuple(next_state) not in seen:
+            if tuple(next_state) not in pre_state:
                 priority = cost + h(next_state)
                 heappush(queue, (priority, next_state))
-                seen[tuple(next_state)] = state
+                pre_state[tuple(next_state)] = state
                 max_queue_size = max(max_queue_size, len(queue))  # Update max queue size if necessary
     return []
 
